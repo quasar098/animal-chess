@@ -1,11 +1,12 @@
 const express = require('express');
 const app = express();
+const path = require('path');
 
 // json responses?
 app.use(express.json());
 
 // public routes
-app.use(express.static("public"))
+app.use(express.static("public"));
 
 // api routes
 app.use("/api", require("./routes/hello"))
