@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // api routes
-app.use("/api", require("./routes/hello"))
+app.use("/api", require("./routes/users"))
 
 // open to port 5000
 let port = 5000;

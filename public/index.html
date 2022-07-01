@@ -6,9 +6,20 @@
         <link rel="stylesheet" href="./styles/landing.css">
     </head>
     <body>
-        <h1>website name</h1>
-        <p class="inline">response: </p>
-        <p class="inline" id="response"></p>
+        <h1>welcome to worse chess</h1>
+        <div id="sign-in-pls">
+            <p>pls sign in:</p>
+            <form onsubmit="attemptSignIn();return false;">
+                <input type="text" name="username" placeholder="username" id="username" required>
+                <input type="password" name="password" placeholder="password" id="password" required>
+                <input type="submit">
+                <input type="checkbox" name="register" class="check" id="register">
+                <p class="inline">register as new user?</p>
+            </form>
+        </div>
+        <div id="thanks-for-signing-in">
+            <button type="button" name="logout" onclick="clearStoredCred();updateSignIn();">logout</button>
+        </div>
         <script src="./js/master.js" charset="utf-8"></script>
         <script src="./js/landing.js" charset="utf-8"></script>
     </body>
