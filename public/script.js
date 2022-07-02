@@ -5,17 +5,50 @@ class Board {
         this.defending = defendingPlayer;
         this.element = document.getElementById('board');
         document.addEventListener("mousemove", this.moveGrabbed);
-        this.addPiece("knight", 1, 2)
+        this.addPiece("buffalo", 0, 6);
+        this.addPiece("knight", 1, 6);
+        this.addPiece("cobra", 2, 6);
+        this.addPiece("pedestrian", 3, 6);
+        this.addPiece("cobra", 4, 6);
+        this.addPiece("knight", 5, 6);
+        this.addPiece("buffalo", 6, 6);
+        this.addPiece("goose", 0, 5);
+        this.addPiece("goose", 1, 5);
+        this.addPiece("goose", 2, 5);
+        this.addPiece("buffalo", 3, 5);
+        this.addPiece("goose", 4, 5);
+        this.addPiece("goose", 5, 5);
+        this.addPiece("goose", 6, 5);
+
+        // enemy
+        this.addPiece("buffalo", 0, 0, true);
+        this.addPiece("knight", 1, 0, true);
+        this.addPiece("cobra", 2, 0, true);
+        this.addPiece("pedestrian", 3, 0, true);
+        this.addPiece("cobra", 4, 0, true);
+        this.addPiece("knight", 5, 0, true);
+        this.addPiece("buffalo", 6, 0, true);
+        this.addPiece("goose", 0, 1, true);
+        this.addPiece("goose", 1, 1, true);
+        this.addPiece("goose", 2, 1, true);
+        this.addPiece("buffalo", 3, 1, true);
+        this.addPiece("goose", 4, 1, true);
+        this.addPiece("goose", 5, 1, true);
+        this.addPiece("goose", 6, 1, true);
     }
     get pieces() {
         return this.element.children;
     }
-    addPiece(name, x, y) {
+    addPiece(name, x, y, enemy=false) {
         let piece = document.createElement("chess-piece");
         piece.classList.add(name);
         piece.setAttribute("x", x);
         piece.setAttribute("y", y);
         piece.style.transform = "translate(" + x*100 +  "px, " + y*100 + "px)";
+        piece.enemy = enemy;
+        if (piece.enemy) {
+            piece.classList.add("enemy");
+        }
         piece.addEventListener("mousedown", (event) => {
             piece.grabbed = true;
         });

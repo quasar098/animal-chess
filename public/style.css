@@ -37,6 +37,9 @@ chess-piece.cobra {
 chess-piece.buffalo {
     background-image: url("pieces/buffalo.png");
 }
+.enemy {
+    filter: hue-rotate(94deg);
+}
 body {
     width: 100%;
     height: 100%;
