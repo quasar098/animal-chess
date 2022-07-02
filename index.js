@@ -1,15 +1,14 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const sqlite = require('sqlite3').verbose();
+const db = new sqlite.Database('./database/chess.db');
 
 // json responses?
 app.use(express.json());
 
 // public routes
 app.use(express.static("public"));
-
-// api routes
-app.use("/api", require("./routes/users"))
 
 // open to port 5000
 let port = 5000;

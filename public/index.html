@@ -2,25 +2,15 @@
 <html lang="en" dir="ltr">
     <head>
         <meta charset="utf-8">
-        <title>Worse Chess Landing Page</title>
-        <link rel="stylesheet" href="./styles/landing.css">
+        <title>Animal Chess</title>
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <h1>welcome to worse chess</h1>
-        <div id="sign-in-pls">
-            <p>pls sign in:</p>
-            <form onsubmit="attemptSignIn();return false;">
-                <input type="text" name="username" placeholder="username" id="username" required>
-                <input type="password" name="password" placeholder="password" id="password" required>
-                <input type="submit">
-                <input type="checkbox" name="register" class="check" id="register">
-                <p class="inline">register as new user?</p>
-            </form>
+        <div class="chess-area">
+            <h1>Animal Chess</h1>
+            <chess-board id="board" class="attacker"></chess-board>
         </div>
-        <div id="thanks-for-signing-in">
-            <button type="button" name="logout" onclick="clearStoredCred();updateSignIn();">logout</button>
-        </div>
-        <script src="./js/master.js" charset="utf-8"></script>
-        <script src="./js/landing.js" charset="utf-8"></script>
+        <hover-tip></hover-tip>
+        <script src="script.js" charset="utf-8"></script>
     </body>
 </html>

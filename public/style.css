@@ -1,0 +1,69 @@
+* {
+    font-family: Helvetica;
+    user-select: none;
+}
+h1 {
+    font-weight: bold;
+    margin-top: 0px;
+    padding: 5px;
+}
+hover-tip {
+    position: absolute;
+    height: 100px;
+    width: 100px;
+    background-color: #eda4ff63;
+}
+chess-piece {
+    position: absolute;
+    height: 100px;
+    width: 100px;
+    display: inline-block;
+}
+chess-piece.knight {
+    background-image: url("pieces/knight.png")
+}
+chess-piece.pedestrian {
+    background-image: url("pieces/pedestrian.png");
+}
+chess-piece.monkey {
+    background-image: url("pieces/monkey.png");
+}
+chess-piece.goose {
+    background-image: url("pieces/goose.png");
+}
+chess-piece.cobra {
+    background-image: url("pieces/cobra.png")
+}
+chess-piece.buffalo {
+    background-image: url("pieces/buffalo.png");
+}
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    overflow: hidden;
+}
+.chess-area {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+html {
+    width: 100%;
+    height: 100%;
+}
+#board {
+    width: 700px;
+    height: 700px;
+    background-size: cover;
+    border-style: solid;
+}
+#board.attacker {
+    background-image: url("board1.png");
+}
+#board.defender {
+    background-image: url("board2.png");
+}
