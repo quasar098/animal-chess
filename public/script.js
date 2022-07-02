@@ -92,10 +92,7 @@ function clamp(num, a, b) {
 }
 
 function fakeEvent(element, event) {
-    let clickEvent = document.createEvent('MouseEvents');
-    clickEvent.initEvent(event.type, true, true);
-    clickEvent.clientX = event.clientX;
-    clickEvent.clientY = event.clientY;
+    let clickEvent = new MouseEvent(event.type, {button: event.button, clientX: event.clientX, clientY: event.clientY})
     element.dispatchEvent(clickEvent);
 }
 
