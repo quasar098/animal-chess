@@ -7,17 +7,26 @@ h1 {
     margin-top: 0px;
     padding: 5px;
 }
+h4 {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    font-size: 20px;
+}
 hover-tip {
     position: absolute;
     height: 100px;
     width: 100px;
     background-color: #eda4ff63;
+    border: 5px ridge #93b5d366;
+    box-sizing: border-box;
 }
 chess-piece {
     position: absolute;
     height: 100px;
     width: 100px;
     display: inline-block;
+    z-index: 20;
 }
 chess-piece.knight {
     background-image: url("pieces/knight.png")
@@ -64,9 +73,12 @@ html {
     background-size: cover;
     border-style: solid;
 }
-#board.attacker {
-    background-image: url("board1.png");
+#board {
+    background-image: url("board.png");
 }
-#board.defender {
-    background-image: url("board2.png");
+img.legal {
+    z-index: 10;
+    height: 100px;
+    width: 100px;
+    position: absolute;
 }
