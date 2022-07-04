@@ -9,6 +9,8 @@ let audioMoves = [new Audio("move.mp3"), new Audio("move.mp3"), new Audio("move.
 let audioTakes = [new Audio("take.mp3"), new Audio("take.mp3"), new Audio("take.mp3"), new Audio("take.mp3")];
 let audioGameOver = new Audio("gameover.mp3");
 
+let whoseTurn = undefined;
+
 function soundStart() {
     audioStart.play();
 }
@@ -136,12 +138,17 @@ class Board {
                         lastSelectedPiece = undefined;
                         updateLegalMoves();
                         // makes a move in general
+                        whoseTurn = !whoseTurn;
                         movesPara.innerHTML = "<br>" + movesPara.innerHTML;
                         movesPara.innerText = (piece.enemy ? "red " : "blue ")
-                        + piece.classList[0] + " [" + letEq[piece.getAttribute("x")*1]+(piece.getAttribute("y")*1+1)+" ▶ "
+                        + piece.classList[0] + " [" + letEq[piece.getAttribute("x")*1]+(piece.getAttribute("y")*1+1)+" > "
                         + (letEq[x])+(y+1) + "] " + ((overWritePiece == undefined) ? "" : "♞") + movesPara.innerText;
                         for (var i = 0; i < 310; i+=10) {
                             setTimeout(addNotation, i);
+                        }
+                        if (["goose", "buffalo"].includes(piece.classList[0]) && y == (6-!piece.enemy*6)) {
+                            piece.classList.remove(piece.classList[0]);
+                            piece.classList.add("monkey")
                         }
                     }
                     piece.setAttribute("x", x);
@@ -165,7 +172,12 @@ class Board {
             piece.classList.add("enemy");
         }
         piece.addEventListener("mousedown", (event) => {
-            piece.grabbed = true;
+            if (piece.enemy == whoseTurn || whoseTurn == undefined) {
+                piece.grabbed = true;
+            }
+            if (whoseTurn == undefined) {
+                whoseTurn = piece.enemy;
+            }
             lastSelectedPiece = piece;
             updateLegalMoves();
             setTimeout(() => {
