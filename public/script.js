@@ -1,6 +1,38 @@
 const hoverTip = document.getElementsByTagName('hover-tip')[0];
 const notationDiv = document.getElementsByClassName("notation")[0];
 const legalMovesDiv = document.getElementsByClassName("legal-moves")[0];
+const animalChessTitle = document.getElementById('title');
+const movesPara = document.getElementById('moves');
+
+let audioStart = new Audio("start.mp3");
+let audioMoves = [new Audio("move.mp3"), new Audio("move.mp3"), new Audio("move.mp3"), new Audio("move.mp3")];
+let audioTakes = [new Audio("take.mp3"), new Audio("take.mp3"), new Audio("take.mp3"), new Audio("take.mp3")];
+let audioGameOver = new Audio("gameover.mp3");
+
+function soundStart() {
+    audioStart.play();
+}
+function soundMove() {
+    for (var i = 0; i < audioMoves.length; i++) {
+        if (audioMoves[i].paused) {
+            audioMoves[i].play();
+            return true;
+        }
+    }
+    return false;
+}
+function soundTake() {
+    for (var i = 0; i < audioTakes.length; i++) {
+        if (audioTakes[i].paused) {
+            audioTakes[i].play();
+            return true;
+        }
+    }
+    return false;
+}
+function soundGameOver() {
+    audioGameOver.play();
+}
 
 const pieceOffset = {
     true: {  // is enemy
@@ -66,18 +98,51 @@ class Board {
                 piece.style.left = "";
                 if (isHoveringOnSquare(event.clientX, event.clientY)) {
                     let {x, y} = hoverSquare(event.clientX, event.clientY);
+                    let letEq = "ABCDEFG"
                     if (!(piece.getAttribute("x") == x && piece.getAttribute("y") == y)) {
                         let overWritePiece = this.getPieceAtPos(x, y);
+                        if (getTooltipAt(x, y) == undefined) {
+                            board.update();
+                            return;
+                        }
                         if (overWritePiece != undefined) {
                             if (overWritePiece.enemy == piece.enemy) {
                                 board.update();
                                 return;
-                            } else {
-                                lastSelectedPiece = undefined;
                             }
+                            if (overWritePiece.classList.contains("pedestrian")) {
+                                soundGameOver();
+                                board.element.removeChild(overWritePiece);
+                                lastSelectedPiece = undefined;
+                                piece.setAttribute("x", x);
+                                piece.setAttribute("y", y);
+                                board.update();
+                                animalChessTitle.innerText = overWritePiece.enemy ? "Blue wins" : "Red wins";
+                                movesPara.innerHTML = "<br>" + movesPara.innerHTML;
+                                movesPara.innerText = (piece.enemy ? "red " : "blue ")
+                                + piece.classList[0] + " [" + letEq[piece.getAttribute("x")*1]+(piece.getAttribute("y")*1+1)+" ▶ "
+                                + (letEq[x])+(y+1) + "] " + ((overWritePiece == undefined) ? "" : "♔") + movesPara.innerText;
+                                movesPara.innerHTML = "<br>" + movesPara.innerHTML;
+                                movesPara.innerText = (overWritePiece.enemy ? "Blue wins" : "Red wins") + movesPara.innerText;
+                                return;
+                            }
+                            // take
+                            soundTake();
                             board.element.removeChild(overWritePiece);
+                        } else {
+                            // just a move
+                            soundMove();
                         }
                         lastSelectedPiece = undefined;
+                        updateLegalMoves();
+                        // makes a move in general
+                        movesPara.innerHTML = "<br>" + movesPara.innerHTML;
+                        movesPara.innerText = (piece.enemy ? "red " : "blue ")
+                        + piece.classList[0] + " [" + letEq[piece.getAttribute("x")*1]+(piece.getAttribute("y")*1+1)+" ▶ "
+                        + (letEq[x])+(y+1) + "] " + ((overWritePiece == undefined) ? "" : "♞") + movesPara.innerText;
+                        for (var i = 0; i < 310; i+=10) {
+                            setTimeout(addNotation, i);
+                        }
                     }
                     piece.setAttribute("x", x);
                     piece.setAttribute("y", y);
@@ -165,6 +230,15 @@ let board = new Board();
 
 board.update();
 
+function getTooltipAt(cx, cy) {
+    for (var i = 0; i < legalMovesDiv.children.length; i++) {
+        let x = legalMovesDiv.children[i].getAttribute("x");
+        let y = legalMovesDiv.children[i].getAttribute("y");
+        if (cx == x && cy == y) return legalMovesDiv.children[i];
+    }
+    return undefined;
+}
+
 function removeAllChildNodes(parent) {
     while (parent.firstChild) {
         parent.removeChild(parent.firstChild);
@@ -197,6 +271,8 @@ function updateLegalMoves() {
         dotImg.src = "tooltip.png"
         dotImg.style.left = board.rect.left+x*100 + "px";
         dotImg.style.top = board.rect.top+y*100 + 'px';
+        dotImg.setAttribute("x", x);
+        dotImg.setAttribute("y", y);
         if (x != clamp(x, 0, 6)) return;
         if (y != clamp(y, 0, 6)) return;
         let onTopOf = board.getPieceAtPos(x, y);
@@ -245,6 +321,10 @@ function hoverSquare(clientX, clientY) {
 
 document.addEventListener("mousedown", (event) => {
     lastSelectedPiece = undefined;
+    if (!audioStart.played.length) {
+        soundStart();
+        animalChessTitle.innerText = "Animal Chess";
+    }
 })
 
 document.addEventListener("mousemove", (event) => {
