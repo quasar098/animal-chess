@@ -84,6 +84,6 @@ app.get('*', (req, res) => {
 
 // open to port 5000
 let port = 5000;
-server.listen(port, () => {
+server.listen(process.env.PORT || port, () => {
     console.log("Listening on port " + port);
 })
