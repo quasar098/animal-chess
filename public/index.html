@@ -6,20 +6,35 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <div class="chess-area">
-            <h1 id="title">Animal Chess</h1>
-            <div class="a-flex">
-                <chess-board id="board"></chess-board>
-                <p id="moves"></p>
+        <div id="game">
+            <div class="chess-area">
+                <h1 id="title">Animal Chess</h1>
+                <div class="a-flex">
+                    <chess-board id="board"></chess-board>
+                    <div style="display:block">
+                        <p id="num-moves"># Moves: 0</p>
+                        <p id="moves"></p>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="notation">
+            <div class="notation">
 
-        </div>
-        <div class="legal-moves">
+            </div>
+            <div class="legal-moves">
 
+            </div>
+            <hover-tip></hover-tip>
         </div>
-        <hover-tip></hover-tip>
+        <div id="menu">
+            <h1>Welcome to Animal Chess</h1>
+            <div class="inline">
+                <input type="text" name="username" placeholder="Room name" id="room-name">
+                <button type="button" name="join" id="join-game">Create</button>
+            </div>
+            <p id="warning"></p>
+        </div>
+        <script src="utils.js" charset="utf-8"></script>
+        <script src="socket.io.js" charset="utf-8"></script>
         <script src="script.js" charset="utf-8"></script>
     </body>
 </html>

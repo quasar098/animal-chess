@@ -3,14 +3,54 @@ const notationDiv = document.getElementsByClassName("notation")[0];
 const legalMovesDiv = document.getElementsByClassName("legal-moves")[0];
 const animalChessTitle = document.getElementById('title');
 const movesPara = document.getElementById('moves');
+const numMoves = document.getElementById('num-moves');
+const joinGame = document.getElementById('join-game');
+const roomName = document.getElementById('room-name');
+const warningPara = document.getElementById('warning');
+setScreen("menu");
 
+// MENU STUFF
+var socket = io();
+let createdGameNames = [];
+
+// socket on
+socket.emit("get-game-names-list");
+socket.on("error", (errmsg) => {
+    warningPara.innerText = errmsg;
+});
+socket.on("begin", (state) => {
+    setScreen("game");
+});
+socket.on("refresh", () => {
+    location.reload();
+})
+socket.on("game-names-list", (names) => {
+    createdGameNames = names;
+});
+
+// menu event listeners
+roomName.addEventListener("input", (e) => {
+    if (createdGameNames.includes(roomName.value)) {
+        joinGame.innerText = "Join";
+    } else {
+        joinGame.innerText = "Create"
+    }
+});
+joinGame.addEventListener("click", (e) => {
+    socket.emit("join-game", roomName.value);
+    warningPara.innerText = joinGame.innerText == "Join" ? "joining game..." : "waiting for opponent to join...";
+});
+
+// GAME STUFF
 let audioStart = new Audio("start.mp3");
 let audioMoves = [new Audio("move.mp3"), new Audio("move.mp3"), new Audio("move.mp3"), new Audio("move.mp3")];
 let audioTakes = [new Audio("take.mp3"), new Audio("take.mp3"), new Audio("take.mp3"), new Audio("take.mp3")];
 let audioGameOver = new Audio("gameover.mp3");
 
+let totalMoves = 0;
 let whoseTurn = undefined;
 
+// sounds
 function soundStart() {
     audioStart.play();
 }
@@ -36,6 +76,7 @@ function soundGameOver() {
     audioGameOver.play();
 }
 
+// piece info
 const pieceOffset = {
     true: {  // is enemy
         "goose": [[0, 1], [0, 2]],
@@ -120,12 +161,8 @@ class Board {
                                 piece.setAttribute("y", y);
                                 board.update();
                                 animalChessTitle.innerText = overWritePiece.enemy ? "Blue wins" : "Red wins";
-                                movesPara.innerHTML = "<br>" + movesPara.innerHTML;
-                                movesPara.innerText = (piece.enemy ? "red " : "blue ")
-                                + piece.classList[0] + " [" + letEq[piece.getAttribute("x")*1]+(piece.getAttribute("y")*1+1)+" ▶ "
-                                + (letEq[x])+(y+1) + "] " + ((overWritePiece == undefined) ? "" : "♔") + movesPara.innerText;
-                                movesPara.innerHTML = "<br>" + movesPara.innerHTML;
-                                movesPara.innerText = (overWritePiece.enemy ? "Blue wins" : "Red wins") + movesPara.innerText;
+                                totalMoves += 1;
+                                numMoves.innerText = "# Moves: " + totalMoves;
                                 return;
                             }
                             // take
@@ -138,11 +175,13 @@ class Board {
                         lastSelectedPiece = undefined;
                         updateLegalMoves();
                         // makes a move in general
+                        totalMoves += 1;
+                        numMoves.innerText = "# Moves: " + totalMoves;
                         whoseTurn = !whoseTurn;
                         movesPara.innerHTML = "<br>" + movesPara.innerHTML;
-                        movesPara.innerText = (piece.enemy ? "red " : "blue ")
+                        movesPara.innerText = totalMoves + ": " + (piece.enemy ? "red " : "blue ")
                         + piece.classList[0] + " [" + letEq[piece.getAttribute("x")*1]+(piece.getAttribute("y")*1+1)+" > "
-                        + (letEq[x])+(y+1) + "] " + ((overWritePiece == undefined) ? "" : "♞") + movesPara.innerText;
+                        + (letEq[x])+(y+1) + "] " + ((overWritePiece == undefined) ? "" : "<!>") + movesPara.innerText;
                         for (var i = 0; i < 310; i+=10) {
                             setTimeout(addNotation, i);
                         }
@@ -304,24 +343,6 @@ function updateLegalMoves() {
     }
 }
 
-addNotation();
-
-window.addEventListener("resize", addNotation);
-
-function clamp(num, a, b) {
-    if (num > b) {
-        return b;
-    }
-    if (a > num) {
-        return a;
-    }
-    return num;
-}
-
-function floorest(number, toFloorest) {
-    return parseInt(number-number%toFloorest);
-}
-
 function isHoveringOnSquare(clientX, clientY) {
     return 700>clientX-board.rect.left&&clientX-board.rect.left>0&&700>clientY-board.rect.top&&clientY-board.rect.top>0
 }
@@ -329,13 +350,22 @@ function isHoveringOnSquare(clientX, clientY) {
 function hoverSquare(clientX, clientY) {
     return {x: clamp(floorest(clientX-board.rect.left-3, 100)/100, 0, 6), y: clamp(floorest(clientY-board.rect.top-3, 100)/100, 0, 6)};
 }
+function boardToString() {
+    // first convert the board into a good format;
+    let boardList = []
+    console.log(JSON.stringify(boardList));
+}
+function stringToBoard(str) {
+    // TODO: DO THIS
+}
+
+addNotation();
+
+// run stuff;
+window.addEventListener("resize", addNotation);
 
 document.addEventListener("mousedown", (event) => {
     lastSelectedPiece = undefined;
-    if (!audioStart.played.length) {
-        soundStart();
-        animalChessTitle.innerText = "Animal Chess";
-    }
 })
 
 document.addEventListener("mousemove", (event) => {

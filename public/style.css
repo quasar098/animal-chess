@@ -82,26 +82,53 @@ img.legal {
     width: 100px;
     position: absolute;
 }
-p#moves {
+#moves {
     margin-left: 10px;
-    margin-top: 50px;
-    width: 200px;
-    color: #FFFFFF;
-    background: -webkit-linear-gradient(#0000FF62, #FFFFFF22);
+    width: 250px;
+    color: #000;
+    border-color: #000;
+    border-style: solid;
+    box-sizing: border-box;
+    background-color: #FFFFFF;
     padding: 5px;
     border-radius: 1px;
     transition-duration: 0.3s;
-    overflow-y: hidden;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scrollbar-width: none;
     opacity: 100%;
     height: 590px;
 }
-p#moves:empty {
-    opacity: 0%;
-    background: -webkit-linear-gradient(#0000000, #0000000);
+#moves::-webkit-scrollbar {
+    display: none;
+}
+#num-moves {
+    margin-left: 10px;
+    font-weight: bolder;
 }
 .a-flex {
     display: flex;
     width: 100%;
     align-items: flex-start;
     justify-content: center;
+}
+#game {
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+#menu {
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+#warning {
+    transition-duration: 0.5s;
+    color: red;
+}
+#warning:empty {
+    height: 0px;
 }
