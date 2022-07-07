@@ -18,8 +18,12 @@ socket.emit("get-game-names-list");
 socket.on("error", (errmsg) => {
     warningPara.innerText = errmsg;
 });
-socket.on("begin", (state) => {
+socket.on("begin", ({state, enemy}) => {
     setScreen("game");
+    setTimeout(setNotation, 5);
+    soundStart();
+    myRole = enemy;
+    onlineState = state;
 });
 socket.on("refresh", () => {
     location.reload();
@@ -27,6 +31,27 @@ socket.on("refresh", () => {
 socket.on("game-names-list", (names) => {
     createdGameNames = names;
 });
+socket.on("update-board-state", ({pieces, state, moveMessage, moveType}) => {
+    onlineState = state;
+    board.fromArrayState(pieces);
+    if (moveMessage != null) {
+        switch (moveType) {
+            case 0:
+                soundMove();
+                break;
+            case 1:
+                soundTake();
+                break;
+            case 2:
+                soundGameOver();
+                break;
+        }
+        movesPara.innerHTML = "<br>" + movesPara.innerHTML;
+        movesPara.innerText = moveMessage + movesPara.innerText;
+    }
+    numMoves.innerHTML = "# Moves: " + onlineState.moves;
+    lastSelectedPiece = undefined;
+})
 
 // menu event listeners
 roomName.addEventListener("input", (e) => {
@@ -47,8 +72,10 @@ let audioMoves = [new Audio("move.mp3"), new Audio("move.mp3"), new Audio("move.
 let audioTakes = [new Audio("take.mp3"), new Audio("take.mp3"), new Audio("take.mp3"), new Audio("take.mp3")];
 let audioGameOver = new Audio("gameover.mp3");
 
-let totalMoves = 0;
-let whoseTurn = undefined;
+let myRole = undefined;
+let onlineState = {whoseTurn: undefined, moves: -1};
+let lastMoveMessage = "NO MESSAGE";
+let lastMoveType = -1;
 
 // sounds
 function soundStart() {
@@ -141,7 +168,6 @@ class Board {
                 piece.style.left = "";
                 if (isHoveringOnSquare(event.clientX, event.clientY)) {
                     let {x, y} = hoverSquare(event.clientX, event.clientY);
-                    let letEq = "ABCDEFG"
                     if (!(piece.getAttribute("x") == x && piece.getAttribute("y") == y)) {
                         let overWritePiece = this.getPieceAtPos(x, y);
                         if (getTooltipAt(x, y) == undefined) {
@@ -154,43 +180,35 @@ class Board {
                                 return;
                             }
                             if (overWritePiece.classList.contains("pedestrian")) {
+                                // take (pedestrian)
                                 soundGameOver();
-                                board.element.removeChild(overWritePiece);
-                                lastSelectedPiece = undefined;
-                                piece.setAttribute("x", x);
-                                piece.setAttribute("y", y);
-                                board.update();
-                                animalChessTitle.innerText = overWritePiece.enemy ? "Blue wins" : "Red wins";
-                                totalMoves += 1;
-                                numMoves.innerText = "# Moves: " + totalMoves;
-                                return;
+                                lastMoveType = 2;
+                            } else {
+                                // take (not pedestrian)
+                                soundTake();
+                                lastMoveType = 1;
                             }
-                            // take
-                            soundTake();
                             board.element.removeChild(overWritePiece);
                         } else {
-                            // just a move
+                            // just a move not a take
                             soundMove();
+                            lastMoveType = 0;
                         }
+                        // makes a move at all
                         lastSelectedPiece = undefined;
                         updateLegalMoves();
-                        // makes a move in general
-                        totalMoves += 1;
-                        numMoves.innerText = "# Moves: " + totalMoves;
-                        whoseTurn = !whoseTurn;
-                        movesPara.innerHTML = "<br>" + movesPara.innerHTML;
-                        movesPara.innerText = totalMoves + ": " + (piece.enemy ? "red " : "blue ")
-                        + piece.classList[0] + " [" + letEq[piece.getAttribute("x")*1]+(piece.getAttribute("y")*1+1)+" > "
-                        + (letEq[x])+(y+1) + "] " + ((overWritePiece == undefined) ? "" : "<!>") + movesPara.innerText;
-                        for (var i = 0; i < 310; i+=10) {
-                            setTimeout(addNotation, i);
-                        }
+
+                        // addMoves
+                        addMove(piece, x, y, overWritePiece);
+
+                        // upgrade goose
                         if (["goose"].includes(piece.classList[0]) && y == (6-!piece.enemy*6)) {
                             piece.classList.replace(piece.classList[0], "monkey");
                         }
+                        piece.setAttribute("x", x);
+                        piece.setAttribute("y", y);
+                        sendBoardState();
                     }
-                    piece.setAttribute("x", x);
-                    piece.setAttribute("y", y);
                 }
                 board.update();
             });
@@ -210,11 +228,8 @@ class Board {
             piece.classList.add("enemy");
         }
         piece.addEventListener("mousedown", (event) => {
-            if (piece.enemy == whoseTurn || whoseTurn == undefined) {
+            if (piece.enemy == myRole && myRole == onlineState.whoseTurn) {
                 piece.grabbed = true;
-            }
-            if (whoseTurn == undefined) {
-                whoseTurn = piece.enemy;
             }
             lastSelectedPiece = piece;
             updateLegalMoves();
@@ -274,11 +289,21 @@ class Board {
         if (piece == undefined) return undefined;
         return {x: piece.getAttribute("x")*1, y: piece.getAttribute("y")*1}
     }
+    fromArrayState(piecesArray) {
+        removeAllChildNodes(this.element);
+        piecesArray.forEach(({type, x, y, enemy}, index) => {
+            this.addPiece(type, x, y, enemy);
+        });
+    }
 }
 
 let board = new Board();
 
 board.update();
+
+function sendBoardState() {
+    socket.emit("update-board-state", {pieces: boardToArray(), moveType: lastMoveType, moveMessage: lastMoveMessage});
+}
 
 function getTooltipAt(cx, cy) {
     for (var i = 0; i < legalMovesDiv.children.length; i++) {
@@ -289,13 +314,22 @@ function getTooltipAt(cx, cy) {
     return undefined;
 }
 
+function addMove(piece, x, y, overWritePiece) {
+    movesPara.innerHTML = "<br>" + movesPara.innerHTML;
+    lastMoveMessage = onlineState.moves + ": " + (piece.enemy ? "red " : "blue ");
+    + piece.classList[0] + " [" + "ABCDEFG"[piece.getAttribute("x")*1]+(piece.getAttribute("y")*1+1)+" > "
+    + ("ABCDEFG"[x])+(y+1) + "] " + ((overWritePiece == undefined) ? "" : "<!>");
+    movesPara.innerText = lastMoveMessage + movesPara.innerText
+    numMoves.innerText = "# Moves: " + onlineState.moves;
+}
+
 function removeAllChildNodes(parent) {
     while (parent.firstChild) {
         parent.removeChild(parent.firstChild);
     }
 }
 
-function addNotation() {
+function setNotation() {
     removeAllChildNodes(notationDiv);
     for (var i = 0; i < 7; i++) {
         let noteNumber = document.createElement("h4");
@@ -350,19 +384,18 @@ function isHoveringOnSquare(clientX, clientY) {
 function hoverSquare(clientX, clientY) {
     return {x: clamp(floorest(clientX-board.rect.left-3, 100)/100, 0, 6), y: clamp(floorest(clientY-board.rect.top-3, 100)/100, 0, 6)};
 }
-function boardToString() {
-    // first convert the board into a good format;
-    let boardList = []
-    console.log(JSON.stringify(boardList));
-}
-function stringToBoard(str) {
-    // TODO: DO THIS
+function boardToArray() {
+    let boardList = [];
+    board.forEach((index, piece) => {
+        boardList.push({type: piece.classList[0], x: piece.getAttribute("x"), y: piece.getAttribute("y"), enemy: piece.enemy});
+    });
+    return boardList;
 }
 
-addNotation();
+setNotation();
 
 // run stuff;
-window.addEventListener("resize", addNotation);
+window.addEventListener("resize", setNotation);
 
 document.addEventListener("mousedown", (event) => {
     lastSelectedPiece = undefined;

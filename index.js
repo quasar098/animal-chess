@@ -23,14 +23,11 @@ io.on("connection", (socket) => {
             // set game to starting position/state
             games[gameName] = {
                 state: {
-                    pieces: [
-                        {type: "buffalo", enemy: true, x: 1, y: 2}
-                    ],
-                    turn: false,
+                    whoseTurn: false,
                     moves: 0
                 },
-                hostSocket: undefined,
-                enemySocket: undefined
+                hostSocket: null,
+                enemySocket: null
             };
         }
         let game = games[gameName];
@@ -42,8 +39,10 @@ io.on("connection", (socket) => {
         if (game.enemySocket == undefined) {
             game.enemySocket = socket;
             socket.game = gameName;
-            game.hostSocket.emit("begin", game.state);
-            game.enemySocket.emit("begin", game.state);
+            game.hostSocket.other = game.enemySocket;
+            game.enemySocket.other = game.hostSocket;
+            game.hostSocket.emit("begin", {state: game.state, enemy: false});
+            game.enemySocket.emit("begin", {state: game.state, enemy: true});
             return;
         }
         socket.emit("error", "game already full");
@@ -60,13 +59,22 @@ io.on("connection", (socket) => {
             delete games[socket.game];
         }
         // if opponent leaves, keep game open for others to join
-        if (games[socket.game].enemySocket == socket) {
-            delete games[socket.game].enemySocket;
+        if (games[socket.game] != null) {
+            if (games[socket.game].enemySocket == socket) {
+                games[socket.game].enemySocket = null;
+            }
         }
     });
     socket.on("get-game-names-list", () => {
         socket.emit("game-names-list", Object.keys(games));
     });
+    socket.on("update-board-state", ({pieces, moveType, moveMessage}) => {
+        let game = games[socket.game];
+        games[socket.game].state.whoseTurn = !game.state.whoseTurn;
+        games[socket.game].state.moves++;
+        socket.other.emit("update-board-state", {pieces: pieces, moveType: moveType, moveMessage: moveMessage, state: games[socket.game].state});
+        socket.emit("update-board-state", {pieces: pieces, moveType: null, moveMessage: null, state: games[socket.game].state});
+    })
 })
 
 // 404 uh oh

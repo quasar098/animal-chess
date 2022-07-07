@@ -8,7 +8,7 @@ function setScreen(scr) {
             menuDiv.style.display = "flex";
             break;
         case "game":
-            gameDIv.style.display = "block";
+            gameDiv.style.display = "block";
             break;
         default:
             break;
