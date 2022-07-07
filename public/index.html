@@ -9,6 +9,7 @@
         <div id="game">
             <div class="chess-area">
                 <h1 id="title">Animal Chess</h1>
+                <h2 id="subtitle">Your turn</h2>
                 <div class="a-flex">
                     <chess-board id="board"></chess-board>
                     <div style="display:block">
@@ -27,12 +28,17 @@
         </div>
         <div id="menu">
             <h1>Welcome to Animal Chess</h1>
-            <div class="inline">
-                <input type="text" name="username" placeholder="Room name" id="room-name">
-                <button type="button" name="join" id="join-game">Create</button>
+            <div>
+                    <input type="text" name="username" placeholder="Room name" id="room-name">
+                    <button type="button" name="join" id="join-game">Create Room</button>
+                    <button type="button" name="close the game" id="close-game">Close Room</button>
             </div>
-            <p id="warning"></p>
+            <div style="padding-top: 10px">
+                <p id="warning"></p>
+            </div>
         </div>
+        <p id="go-back"><a href="https://quasar098.github.io">Go back to quasar098.github.io</a></p>
+        <p id="github"><a href="https://github.com/quasar098/animal-chess">Check out the code for this game</a></p>
         <script src="utils.js" charset="utf-8"></script>
         <script src="socket.io.js" charset="utf-8"></script>
         <script src="script.js" charset="utf-8"></script>

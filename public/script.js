@@ -4,9 +4,17 @@ const legalMovesDiv = document.getElementsByClassName("legal-moves")[0];
 const animalChessTitle = document.getElementById('title');
 const movesPara = document.getElementById('moves');
 const numMoves = document.getElementById('num-moves');
+const subTitle = document.getElementById('subtitle');
+
+// links
+const githubLink = document.getElementById('github');
+const goBackQuasar = document.getElementById('go-back');
+
+// main menu
 const joinGame = document.getElementById('join-game');
 const roomName = document.getElementById('room-name');
 const warningPara = document.getElementById('warning');
+const closeGameButton = document.getElementById('close-game');
 setScreen("menu");
 
 // MENU STUFF
@@ -17,6 +25,7 @@ let createdGameNames = [];
 socket.emit("get-game-names-list");
 socket.on("error", (errmsg) => {
     warningPara.innerText = errmsg;
+    closeGameButton.style.display = "none";
 });
 socket.on("begin", ({state, enemy}) => {
     setScreen("game");
@@ -24,8 +33,17 @@ socket.on("begin", ({state, enemy}) => {
     soundStart();
     myRole = enemy;
     onlineState = state;
+    goBackQuasar.firstChild.classList.add("playing");
+    githubLink.firstChild.classList.add("playing");
+    subtitle.innerText = myRole == onlineState.whoseTurn ? "Your turn" : "Opponent's turn";
 });
-socket.on("refresh", () => {
+if (sessionStorage.getItem("disconnected") != undefined) {
+    warningPara.innerText = sessionStorage.getItem("disconnected");
+    sessionStorage.removeItem("disconnected");
+}
+socket.on("refresh", (msg) => {
+    sessionStorage.setItem("disconnected", msg);
+    console.log(msg);
     location.reload();
 })
 socket.on("game-names-list", (names) => {
@@ -51,20 +69,31 @@ socket.on("update-board-state", ({pieces, state, moveMessage, moveType}) => {
     }
     numMoves.innerHTML = "# Moves: " + onlineState.moves;
     lastSelectedPiece = undefined;
+    subtitle.innerText = myRole == onlineState.whoseTurn ? "Your turn" : "Opponent's turn"
 })
 
 // menu event listeners
 roomName.addEventListener("input", (e) => {
     if (createdGameNames.includes(roomName.value)) {
-        joinGame.innerText = "Join";
+        joinGame.innerText = "Join Room";
     } else {
-        joinGame.innerText = "Create"
+        joinGame.innerText = "Create Room"
     }
 });
 joinGame.addEventListener("click", (e) => {
     socket.emit("join-game", roomName.value);
-    warningPara.innerText = joinGame.innerText == "Join" ? "joining game..." : "waiting for opponent to join...";
+    warningPara.innerText = "waiting for opponent...";
+    closeGameButton.style.display = "inline";
+    roomName.setAttribute("disabled", "true");
+    joinGame.style.display = "none";
 });
+closeGameButton.addEventListener("click", (e) => {
+    socket.emit("close-game");
+    warningPara.innerText = "";
+    closeGameButton.style.display = "none";
+    roomName.removeAttribute("disabled");
+    joinGame.style.display = "inline";
+})
 
 // GAME STUFF
 let audioStart = new Audio("start.mp3");
@@ -316,9 +345,9 @@ function getTooltipAt(cx, cy) {
 
 function addMove(piece, x, y, overWritePiece) {
     movesPara.innerHTML = "<br>" + movesPara.innerHTML;
-    lastMoveMessage = onlineState.moves + ": " + (piece.enemy ? "red " : "blue ");
-    + piece.classList[0] + " [" + "ABCDEFG"[piece.getAttribute("x")*1]+(piece.getAttribute("y")*1+1)+" > "
-    + ("ABCDEFG"[x])+(y+1) + "] " + ((overWritePiece == undefined) ? "" : "<!>");
+    lastMoveMessage = (onlineState.moves+1) + ": " + (piece.enemy ? "red " : "blue ") +
+        piece.classList[0] + " [" + "ABCDEFG"[piece.getAttribute("x")*1]+(piece.getAttribute("y")*1+1)+" > " +
+        ("ABCDEFG"[x])+(y+1) + "] " + ((overWritePiece == undefined) ? "" : "<!>");
     movesPara.innerText = lastMoveMessage + movesPara.innerText
     numMoves.innerText = "# Moves: " + onlineState.moves;
 }

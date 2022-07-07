@@ -54,15 +54,19 @@ io.on("connection", (socket) => {
         // if host leaves, close game
         if (games[socket.game].hostSocket == socket) {
             if (games[socket.game].enemySocket != null) {
-                games[socket.game].enemySocket.emit("refresh");
+                games[socket.game].enemySocket.emit("refresh", "The host disconnected");
             }
             delete games[socket.game];
         }
-        // if opponent leaves, keep game open for others to join
-        if (games[socket.game] != null) {
-            if (games[socket.game].enemySocket == socket) {
-                games[socket.game].enemySocket = null;
+        if (games[socket.game] == null) {
+            return;
+        }
+        // if opponent leaves, close game
+        if (games[socket.game].enemySocket == socket) {
+            if (games[socket.game].hostSocket != null) {
+                games[socket.game].hostSocket.emit("refresh", "Your opponent disconnected");
             }
+            delete games[socket.game];
         }
     });
     socket.on("get-game-names-list", () => {
@@ -74,6 +78,10 @@ io.on("connection", (socket) => {
         games[socket.game].state.moves++;
         socket.other.emit("update-board-state", {pieces: pieces, moveType: moveType, moveMessage: moveMessage, state: games[socket.game].state});
         socket.emit("update-board-state", {pieces: pieces, moveType: null, moveMessage: null, state: games[socket.game].state});
+    })
+    socket.on("close-game", () => {
+        delete games[socket.game];
+        socket.game = undefined;
     })
 })
 
