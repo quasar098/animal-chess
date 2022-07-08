@@ -34,11 +34,13 @@ io.on("connection", (socket) => {
         if (game.hostSocket == undefined) {
             game.hostSocket = socket;
             socket.game = gameName;
+            socket.enemy  = false;
             return;
         }
         if (game.enemySocket == undefined) {
             game.enemySocket = socket;
             socket.game = gameName;
+            socket.enemy = true;
             game.hostSocket.other = game.enemySocket;
             game.enemySocket.other = game.hostSocket;
             game.hostSocket.emit("begin", {state: game.state, enemy: false});
@@ -74,6 +76,12 @@ io.on("connection", (socket) => {
     });
     socket.on("update-board-state", ({pieces, moveType, moveMessage}) => {
         let game = games[socket.game];
+        if (game.state.whoseTurn != socket.enemy) {
+            socket.other.emit("refresh", "Your opponent was caught cheating");
+            socket.emit("refresh", "You've been caught cheating");
+            delete games[socket.game];
+            return;
+        }
         games[socket.game].state.whoseTurn = !game.state.whoseTurn;
         games[socket.game].state.moves++;
         socket.other.emit("update-board-state", {pieces: pieces, moveType: moveType, moveMessage: moveMessage, state: games[socket.game].state});

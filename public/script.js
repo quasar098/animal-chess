@@ -20,6 +20,7 @@ setScreen("menu");
 // MENU STUFF
 var socket = io();
 let createdGameNames = [];
+let gameIsOver = false;
 
 // socket on
 socket.emit("get-game-names-list");
@@ -43,7 +44,6 @@ if (sessionStorage.getItem("disconnected") != undefined) {
 }
 socket.on("refresh", (msg) => {
     sessionStorage.setItem("disconnected", msg);
-    console.log(msg);
     location.reload();
 })
 socket.on("game-names-list", (names) => {
@@ -52,6 +52,9 @@ socket.on("game-names-list", (names) => {
 socket.on("update-board-state", ({pieces, state, moveMessage, moveType}) => {
     onlineState = state;
     board.fromArrayState(pieces);
+    if (!gameIsOver) {
+        subtitle.innerText = myRole == onlineState.whoseTurn ? "Your turn" : "Opponent's turn"
+    }
     if (moveMessage != null) {
         switch (moveType) {
             case 0:
@@ -69,7 +72,6 @@ socket.on("update-board-state", ({pieces, state, moveMessage, moveType}) => {
     }
     numMoves.innerHTML = "# Moves: " + onlineState.moves;
     lastSelectedPiece = undefined;
-    subtitle.innerText = myRole == onlineState.whoseTurn ? "Your turn" : "Opponent's turn"
 })
 
 // menu event listeners
@@ -130,6 +132,10 @@ function soundTake() {
 }
 function soundGameOver() {
     audioGameOver.play();
+    gameIsOver = true;
+    setTimeout(() => {
+        subTitle.innerText = (myRole == onlineState.whoseTurn ? "You lose" : "You win")
+    }, 20);
 }
 
 // piece info
@@ -257,6 +263,9 @@ class Board {
             piece.classList.add("enemy");
         }
         piece.addEventListener("mousedown", (event) => {
+            if (gameIsOver) {
+                return;
+            }
             if (piece.enemy == myRole && myRole == onlineState.whoseTurn) {
                 piece.grabbed = true;
             }
