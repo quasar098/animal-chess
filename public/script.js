@@ -15,7 +15,28 @@ const joinGame = document.getElementById('join-game');
 const roomName = document.getElementById('room-name');
 const warningPara = document.getElementById('warning');
 const closeGameButton = document.getElementById('close-game');
+const themeIcon = document.getElementById('theme-icon');
+const themes = {
+    dark: {
+        "--bg": "#202225",
+        "--main": "#FFFFFF"
+    },
+    light: {
+        "--bg": "#FFFFFF",
+        "--main": "#000000"
+    }
+}
+let isDarkMode = true;
 setScreen("menu");
+
+function toggleTheme() {
+    isDarkMode = !isDarkMode;
+    let currentTheme = themes[isDarkMode ? "dark" : "light"];
+    document.documentElement.style.setProperty('--bg', currentTheme["--bg"]);
+    document.documentElement.style.setProperty('--main', currentTheme["--main"]);
+    themeIcon.classList.remove(themeIcon.classList[1])
+    themeIcon.classList.add(isDarkMode ? "fa-moon-o" : "fa-sun-o");
+}
 
 // MENU STUFF
 var socket = io();
