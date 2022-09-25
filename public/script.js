@@ -26,8 +26,14 @@ const themes = {
         "--main": "#000000"
     }
 }
-let isDarkMode = true;
+let isDarkMode = !JSON.parse(localStorage.getItem("darkMode")) ?? false;
+toggleTheme();
 setScreen("menu");
+
+function vh(percent) {
+    var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    return (percent * h) / 100;
+}
 
 function toggleTheme() {
     isDarkMode = !isDarkMode;
@@ -36,6 +42,7 @@ function toggleTheme() {
     document.documentElement.style.setProperty('--main', currentTheme["--main"]);
     themeIcon.classList.remove(themeIcon.classList[1])
     themeIcon.classList.add(isDarkMode ? "fa-moon-o" : "fa-sun-o");
+    localStorage.setItem("darkMode", isDarkMode);
 }
 
 // MENU STUFF
@@ -224,6 +231,8 @@ class Board {
                 piece.style.left = "";
                 if (isHoveringOnSquare(event.clientX, event.clientY)) {
                     let {x, y} = hoverSquare(event.clientX, event.clientY);
+                    x = Math.round(x);
+                    y = Math.round(y);
                     if (!(piece.getAttribute("x") == x && piece.getAttribute("y") == y)) {
                         let overWritePiece = this.getPieceAtPos(x, y);
                         if (getTooltipAt(x, y) == undefined) {
@@ -278,7 +287,7 @@ class Board {
         piece.classList.add(name);
         piece.setAttribute("x", x);
         piece.setAttribute("y", y);
-        piece.style.transform = "translate(" + x*100 +  "px, " + y*100 + "px)";
+        piece.style.transform = "translate(" + x*vh(10) +  "px, " + y*vh(10) + "px)";
         piece.enemy = enemy;
         if (piece.enemy) {
             piece.classList.add("enemy");
@@ -305,7 +314,7 @@ class Board {
     }
     update() {
         this.forEach((index, piece) => {
-            piece.style.transform = "translate(" + piece.getAttribute("x")*100 + "px, " + piece.getAttribute("y")*100 + "px)";
+            piece.style.transform = "translate(" + piece.getAttribute("x")*vh(10) + "px, " + piece.getAttribute("y")*vh(10) + "px)";
             piece.style.zIndex = "20";
         })
     }
@@ -394,13 +403,13 @@ function setNotation() {
         let noteNumber = document.createElement("h4");
         noteNumber.innerText = i+1;
         noteNumber.style.left = board.rect.left-20 + "px";
-        noteNumber.style.top = board.rect.top+20+i*100 + "px";
+        noteNumber.style.top = board.rect.top+20+i*vh(10) + "px";
         notationDiv.appendChild(noteNumber);
     }
     for (var i = 0; i < 7; i++) {
         let noteNumber = document.createElement("h4");
         noteNumber.innerText = "abcdefg"[i];
-        noteNumber.style.left = board.rect.left+50+i*100 + "px";
+        noteNumber.style.left = board.rect.left+50+i*vh(10) + "px";
         noteNumber.style.top = board.rect.bottom-20 + "px";
         notationDiv.appendChild(noteNumber);
     }
@@ -412,8 +421,8 @@ function updateLegalMoves() {
         let dotImg = document.createElement("img");
         dotImg.classList.add("legal");
         dotImg.src = "tooltip.png"
-        dotImg.style.left = board.rect.left+x*100 + "px";
-        dotImg.style.top = board.rect.top+y*100 + 'px';
+        dotImg.style.left = board.rect.left+x*vh(10) + "px";
+        dotImg.style.top = board.rect.top+y*vh(10) + 'px';
         dotImg.setAttribute("x", x);
         dotImg.setAttribute("y", y);
         if (x != clamp(x, 0, 6)) return;
@@ -434,14 +443,20 @@ function updateLegalMoves() {
             lastSelectedPiece.getAttribute("y")*1+offsets[offsetIndex][1]
         )
     }
+    for (let elmIndex in board.pieces) {
+        if (board.pieces[elmIndex].style != undefined) {
+            board.pieces[elmIndex].style.width = vh(10) + "px";
+            board.pieces[elmIndex].style.height = vh(10) + "px";
+        }
+    }
 }
 
 function isHoveringOnSquare(clientX, clientY) {
-    return 700>clientX-board.rect.left&&clientX-board.rect.left>0&&700>clientY-board.rect.top&&clientY-board.rect.top>0
+    return vh(70)>clientX-board.rect.left&&clientX-board.rect.left>0&&vh(70)>clientY-board.rect.top&&clientY-board.rect.top>0
 }
 
 function hoverSquare(clientX, clientY) {
-    return {x: clamp(floorest(clientX-board.rect.left-3, 100)/100, 0, 6), y: clamp(floorest(clientY-board.rect.top-3, 100)/100, 0, 6)};
+    return {x: clamp(floorest(clientX-board.rect.left, vh(10))/vh(10), 0, 6), y: clamp(floorest(clientY-board.rect.top-3, vh(10))/vh(10), 0, 6)};
 }
 function boardToArray() {
     let boardList = [];
@@ -467,7 +482,7 @@ document.addEventListener("mousemove", (event) => {
     } else {
         hoverTip.style.display = "inline-block";
     }
-    hoverTip.style.top = clamp(Math.round((clientY-board.rect.top%100-53)/100)*100+(board.rect.top%100)+3, board.rect.top+3, board.rect.bottom-103)+ "px";
-    hoverTip.style.left = clamp(Math.round((clientX-board.rect.left%100-53)/100)*100+(board.rect.left%100)+3, board.rect.left+3, board.rect.right-103) + "px";
+    hoverTip.style.top = clamp(Math.round((clientY-board.rect.top%vh(10)-53)/vh(10))*vh(10)+(board.rect.top%vh(10))+3, board.rect.top+3, board.rect.bottom-103)+ "px";
+    hoverTip.style.left = clamp(Math.round((clientX-board.rect.left%vh(10)-53)/vh(10))*vh(10)+(board.rect.left%vh(10))+3, board.rect.left+3, board.rect.right-103) + "px";
 })
 setInterval(updateLegalMoves, 100);

@@ -1,6 +1,6 @@
 :root {
-    --bg: #202225;
-    --main: #FFFFFF;
+    --bg: #888888;
+    --main: #888888;
 }
 *:not(i) {
     font-family: Helvetica;
@@ -23,8 +23,8 @@ button {
 }
 hover-tip {
     position: absolute;
-    height: 100px;
-    width: 100px;
+    height: 10vh;
+    width: 10vh;
     background-color: #eda4ff63;
     border: 5px ridge #93b5d366;
     box-sizing: border-box;
@@ -98,35 +98,33 @@ html {
 #subtitle {
     margin-top: 2px;
 }
-#board {
-    width: 700px;
-    height: 700px;
-    background-size: cover;
-    border-style: solid;
-}
 input {
     color: #000;
 }
 #board {
+    width: 70vh;
+    height: 70vh;
+    background-size: cover;
+    border-style: solid;
     background-image: url("board.png");
+    image-rendering: pixelated;
 }
 img.legal {
     z-index: 10;
-    height: 100px;
-    width: 100px;
+    height: 10vh;
+    width: 10vh;
     position: absolute;
 }
 #moves {
     margin-left: 10px;
     width: 250px;
-    color: #000;
-    border-color: #000;
+    color: var(--main);
+    border-color: var(--main);
     border-style: solid;
     box-sizing: border-box;
-    background-color: #FFFFFF;
+    background-color: var(--bg);
     padding: 5px;
     border-radius: 1px;
-    transition-duration: 0.3s;
     overflow-y: scroll;
     overflow-x: hidden;
     scrollbar-width: none;
