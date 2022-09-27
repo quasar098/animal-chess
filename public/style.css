@@ -31,8 +31,9 @@ hover-tip {
 }
 chess-piece {
     position: absolute;
-    height: 100px;
-    width: 100px;
+    background-size: 10vh 10vh;
+    height: 10vh;
+    width: 10vh;
     display: inline-block;
     z-index: 20;
 }
@@ -104,6 +105,7 @@ input {
 #board {
     width: 70vh;
     height: 70vh;
+    min-width: 70vh;
     background-size: cover;
     border-style: solid;
     background-image: url("board.png");
@@ -129,7 +131,7 @@ img.legal {
     overflow-x: hidden;
     scrollbar-width: none;
     opacity: 100%;
-    height: 590px;
+    height: calc(70vh - 70px);
 }
 #moves::-webkit-scrollbar {
     display: none;

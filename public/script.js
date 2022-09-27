@@ -26,7 +26,8 @@ const themes = {
         "--main": "#000000"
     }
 }
-let isDarkMode = !JSON.parse(localStorage.getItem("darkMode")) ?? false;
+localStorage.setItem("darkMode", localStorage.getItem("darkMode") ?? "true")
+let isDarkMode = !JSON.parse(localStorage.getItem("darkMode"));
 toggleTheme();
 setScreen("menu");
 
@@ -234,50 +235,53 @@ class Board {
                     x = Math.round(x);
                     y = Math.round(y);
                     if (!(piece.getAttribute("x") == x && piece.getAttribute("y") == y)) {
-                        let overWritePiece = this.getPieceAtPos(x, y);
-                        if (getTooltipAt(x, y) == undefined) {
-                            board.update();
-                            return;
-                        }
-                        if (overWritePiece != undefined) {
-                            if (overWritePiece.enemy == piece.enemy) {
-                                board.update();
-                                return;
-                            }
-                            if (overWritePiece.classList.contains("pedestrian")) {
-                                // take (pedestrian)
-                                soundGameOver();
-                                lastMoveType = 2;
-                            } else {
-                                // take (not pedestrian)
-                                soundTake();
-                                lastMoveType = 1;
-                            }
-                            board.element.removeChild(overWritePiece);
-                        } else {
-                            // just a move not a take
-                            soundMove();
-                            lastMoveType = 0;
-                        }
-                        // makes a move at all
-                        lastSelectedPiece = undefined;
-                        updateLegalMoves();
-
-                        // addMoves
-                        addMove(piece, x, y, overWritePiece);
-
-                        // upgrade goose
-                        if (["goose"].includes(piece.classList[0]) && y == (6-!piece.enemy*6)) {
-                            piece.classList.replace(piece.classList[0], "monkey");
-                        }
-                        piece.setAttribute("x", x);
-                        piece.setAttribute("y", y);
-                        sendBoardState();
+                        board.attemptMovePiece(piece, x, y);
                     }
                 }
                 board.update();
             });
         });
+    }
+    attemptMovePiece(piece, x, y) {
+        let overWritePiece = this.getPieceAtPos(x, y);
+        if (getTooltipAt(x, y) == undefined) {
+            board.update();
+            return;
+        }
+        if (overWritePiece != undefined) {
+            if (overWritePiece.enemy == piece.enemy) {
+                board.update();
+                return;
+            }
+            if (overWritePiece.classList.contains("pedestrian")) {
+                // take (pedestrian)
+                soundGameOver();
+                lastMoveType = 2;
+            } else {
+                // take (not pedestrian)
+                soundTake();
+                lastMoveType = 1;
+            }
+            board.element.removeChild(overWritePiece);
+        } else {
+            // just a move not a take
+            soundMove();
+            lastMoveType = 0;
+        }
+        // makes a move at all
+        lastSelectedPiece = undefined;
+        updateLegalMoves();
+
+        // addMoves
+        addMove(piece, x, y, overWritePiece);
+
+        // upgrade goose
+        if (["goose"].includes(piece.classList[0]) && y == (6-!piece.enemy*6)) {
+            piece.classList.replace(piece.classList[0], "monkey");
+        }
+        piece.setAttribute("x", x);
+        piece.setAttribute("y", y);
+        sendBoardState();
     }
     get pieces() {
         return this.element.children;
@@ -386,7 +390,7 @@ function addMove(piece, x, y, overWritePiece) {
     movesPara.innerHTML = "<br>" + movesPara.innerHTML;
     lastMoveMessage = (onlineState.moves+1) + ": " + (piece.enemy ? "red " : "blue ") +
         piece.classList[0] + " [" + "ABCDEFG"[piece.getAttribute("x")*1]+(piece.getAttribute("y")*1+1)+" > " +
-        ("ABCDEFG"[x])+(y+1) + "] " + ((overWritePiece == undefined) ? "" : "<!>");
+        ("ABCDEFG"[x])+(y*1+1) + "] " + ((overWritePiece == undefined) ? "" : "<!>");
     movesPara.innerText = lastMoveMessage + movesPara.innerText
     numMoves.innerText = "# Moves: " + onlineState.moves;
 }
@@ -403,16 +407,17 @@ function setNotation() {
         let noteNumber = document.createElement("h4");
         noteNumber.innerText = i+1;
         noteNumber.style.left = board.rect.left-20 + "px";
-        noteNumber.style.top = board.rect.top+20+i*vh(10) + "px";
+        noteNumber.style.top = board.rect.top+i*vh(10) + "px";
         notationDiv.appendChild(noteNumber);
     }
     for (var i = 0; i < 7; i++) {
         let noteNumber = document.createElement("h4");
         noteNumber.innerText = "abcdefg"[i];
-        noteNumber.style.left = board.rect.left+50+i*vh(10) + "px";
+        noteNumber.style.left = board.rect.left+vh(4)+i*vh(10) + "px";
         noteNumber.style.top = board.rect.bottom-20 + "px";
         notationDiv.appendChild(noteNumber);
     }
+    board.update();
 }
 
 function updateLegalMoves() {
@@ -432,6 +437,13 @@ function updateLegalMoves() {
             if (onTopOf.enemy == lastSelectedPiece.enemy) return;
             dotImg.style.zIndex = 21;
         }
+        dotImg.addEventListener('mousedown', (event) => {
+            if (lastSelectedPiece.enemy != myRole) {
+
+            } else {
+                board.attemptMovePiece(lastSelectedPiece, dotImg.getAttribute("x"), dotImg.getAttribute("y"))
+            }
+        });
         legalMovesDiv.appendChild(dotImg);
     }
 
