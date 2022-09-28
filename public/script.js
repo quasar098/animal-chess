@@ -296,7 +296,11 @@ class Board {
         if (piece.enemy) {
             piece.classList.add("enemy");
         }
-        piece.addEventListener("mousedown", (event) => {
+        piece.addEventListener("mousedown", (event) => board.grabPiece(piece));
+        this.element.appendChild(piece);
+    }
+    grabPiece(piece) {
+        try {
             if (gameIsOver) {
                 return;
             }
@@ -308,8 +312,9 @@ class Board {
             setTimeout(() => {
                 lastSelectedPiece = piece;
             }, 1);
-        });
-        this.element.appendChild(piece);
+        } catch (e) {
+            
+        }
     }
     forEach(callable) {
         for (var i = 0; i < this.pieces.length; i++) {
@@ -439,7 +444,7 @@ function updateLegalMoves() {
         }
         dotImg.addEventListener('mousedown', (event) => {
             if (lastSelectedPiece.enemy != myRole) {
-
+                board.grabPiece(board.getPieceAtPos(mouseX(event), mouseY(event)))
             } else {
                 board.attemptMovePiece(lastSelectedPiece, dotImg.getAttribute("x"), dotImg.getAttribute("y"))
             }
@@ -461,6 +466,16 @@ function updateLegalMoves() {
             board.pieces[elmIndex].style.height = vh(10) + "px";
         }
     }
+}
+
+function mouseX(event) {
+    let {clientX, clientY} = event;
+    return clamp(Math.floor((Math.floor(clientX-board.rect.left%vh(10))/vh(10))-1), 0, 6)
+}
+
+function mouseY(event) {
+    let {clientX, clientY} = event;
+    return clamp(Math.floor((Math.floor(clientY-board.rect.top%vh(10))/vh(10))-2), 0, 6)
 }
 
 function isHoveringOnSquare(clientX, clientY) {
@@ -494,7 +509,7 @@ document.addEventListener("mousemove", (event) => {
     } else {
         hoverTip.style.display = "inline-block";
     }
-    hoverTip.style.top = clamp(Math.round((clientY-board.rect.top%vh(10)-53)/vh(10))*vh(10)+(board.rect.top%vh(10))+3, board.rect.top+3, board.rect.bottom-103)+ "px";
-    hoverTip.style.left = clamp(Math.round((clientX-board.rect.left%vh(10)-53)/vh(10))*vh(10)+(board.rect.left%vh(10))+3, board.rect.left+3, board.rect.right-103) + "px";
+    hoverTip.style.top = clamp(Math.round((clientY-board.rect.top%vh(10)-vh(5))/vh(10))*vh(10)+(board.rect.top%vh(10))+3, board.rect.top+3, board.rect.bottom-vh(10))+ "px";
+    hoverTip.style.left = clamp(Math.round((clientX-board.rect.left%vh(10)-vh(5))/vh(10))*vh(10)+(board.rect.left%vh(10))+3, board.rect.left+3, board.rect.right-vh(10)) + "px";
 })
 setInterval(updateLegalMoves, 100);
