@@ -67,6 +67,10 @@ socket.on("begin", ({state, enemy}) => {
     githubLink.firstChild.classList.add("playing");
     subtitle.innerText = myRole == onlineState.whoseTurn ? "Your turn" : "Opponent's turn";
 });
+socket.on("resend", () => {
+    console.log("resend req");
+    sendBoardState();
+})
 if (sessionStorage.getItem("disconnected") != undefined) {
     warningPara.innerText = sessionStorage.getItem("disconnected");
     sessionStorage.removeItem("disconnected");
@@ -313,7 +317,7 @@ class Board {
                 lastSelectedPiece = piece;
             }, 1);
         } catch (e) {
-            
+
         }
     }
     forEach(callable) {

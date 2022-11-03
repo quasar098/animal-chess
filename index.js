@@ -78,6 +78,10 @@ io.on("connection", (socket) => {
     });
     socket.on("update-board-state", ({pieces, moveType, moveMessage}) => {
         let game = games[socket.game];
+        if (game == undefined) {
+            socket.emit("resend");
+            return;
+        }
         if (game.state.whoseTurn != socket.enemy) {
             socket.other.emit("refresh", "Your opponent was caught cheating");
             socket.emit("refresh", "You've been caught cheating");
