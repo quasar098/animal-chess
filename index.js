@@ -15,6 +15,8 @@ app.use(express.static("public"));
 // api and games
 let games = {}
 
+io.eio.pingTimeout = 20000;
+
 // socket io
 io.on("connection", (socket) => {
     // socket on
@@ -100,6 +102,6 @@ app.get('*', (req, res) => {
 
 // open to port 5000
 let port = 5000;
-server.listen(process.env.PORT || port, () => {
+server.listen(process.env.PORT || port, "0.0.0.0", () => {
     console.log("Listening on port " + port);
 })
