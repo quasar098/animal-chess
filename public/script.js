@@ -274,10 +274,10 @@ class Board {
         }
         // makes a move at all
         lastSelectedPiece = undefined;
-        updateLegalMoves();
 
         // addMoves
         addMove(piece, x, y, overWritePiece);
+        updateLegalMoves();
 
         // upgrade goose
         if (["goose"].includes(piece.classList[0]) && y == (6-!piece.enemy*6)) {
@@ -285,6 +285,7 @@ class Board {
         }
         piece.setAttribute("x", x);
         piece.setAttribute("y", y);
+        removeAllChildNodes(legalMovesDiv);
         sendBoardState();
     }
     get pieces() {
@@ -430,7 +431,6 @@ function setNotation() {
 }
 
 function updateLegalMoves() {
-    removeAllChildNodes(legalMovesDiv);
     function addDotIndicator(x, y) {
         let dotImg = document.createElement("img");
         dotImg.classList.add("legal");
@@ -447,6 +447,9 @@ function updateLegalMoves() {
             dotImg.style.zIndex = 21;
         }
         dotImg.addEventListener('mousedown', (event) => {
+            if (onlineState.whoseTurn != myRole) {
+                return;
+            }
             if (lastSelectedPiece.enemy != myRole) {
                 board.grabPiece(board.getPieceAtPos(mouseX(event), mouseY(event)))
             } else {
@@ -458,6 +461,7 @@ function updateLegalMoves() {
 
     if (lastSelectedPiece == undefined) return;
     let offsets = pieceOffset[lastSelectedPiece.enemy][lastSelectedPiece.classList[0]];
+    removeAllChildNodes(legalMovesDiv);
     for (let offsetIndex in offsets) {
         addDotIndicator(
             lastSelectedPiece.getAttribute("x")*1+offsets[offsetIndex][0],
@@ -516,4 +520,3 @@ document.addEventListener("mousemove", (event) => {
     hoverTip.style.top = clamp(Math.round((clientY-board.rect.top%vh(10)-vh(5))/vh(10))*vh(10)+(board.rect.top%vh(10))+3, board.rect.top+3, board.rect.bottom-vh(10))+ "px";
     hoverTip.style.left = clamp(Math.round((clientX-board.rect.left%vh(10)-vh(5))/vh(10))*vh(10)+(board.rect.left%vh(10))+3, board.rect.left+3, board.rect.right-vh(10)) + "px";
 })
-setInterval(updateLegalMoves, 100);
